@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pet Finder</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px;
+        }
+        .upload-box {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐾 Pet Finder</h1>
+    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+        Click to upload pet image
+        <input type="file" id="fileInput" style="display: none" accept="image/*">
+    </div>
+    <button onclick="analyzePet()">Analyze Pet</button>
+    <div id="result"></div>
+
+    <script>
+        const API_URL = 'https://pet-finder-api-581219442968.us-central1.run.app';
+        const API_KEY = 'ZLaMxxdSRKxocd5RDTt9cxb9V18JC3EB'; // Use a limited key for demo
+
+        async function analyzePet() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select an image');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const response = await fetch(`${API_URL}/predict`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-API-Key': API_KEY
+                        },
+                        body: JSON.stringify({
+                            image: e.target.result
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('result').innerHTML = `
+                        <h3>Result:</h3>
+                        <p>Pet Type: ${data.prediction}</p>
+                        <p>Confidence: ${data.confidence}</p>
+                    `;
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
